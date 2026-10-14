@@ -4,17 +4,17 @@
 
 ## Qualitative Results
 
-### Perspective-Distorted Mesh Rendering
-![Perspective-Distorted Mesh Rendering](distorted%20Images.png)
+### Distorted Images
+![Distorted Images](distorted%20Images.png)
 
-### Close-Range Perspective-Distorted Mesh Rendering
-![Close-Range Perspective-Distorted Mesh Rendering](distorted%20Images%202.png)
+### Distorted Images 2
+![Distorted Images 2](distorted%20Images%202.png)
 
-### 3DPW Mesh Rendering
-![3DPW Mesh Rendering](Examples%20from%203DPW.png)
+### Examples from 3DPW
+![Examples from 3DPW](Examples%20from%203DPW.png)
 
-### Multi-Person Human Mesh Recovery
-![Multi-Person Human Mesh Recovery](Multi-person%20human%20mesh%20recovery.png)
+### Multi-person human mesh recovery
+![Multi-person human mesh recovery](Multi-person%20human%20mesh%20recovery.png)
 
-### Multi-View Mesh Rendering
-![Multi-View Mesh Rendering](Multi%20view%20.png)
+### Multi view
+![Multi view](Multi%20view%20.png)
