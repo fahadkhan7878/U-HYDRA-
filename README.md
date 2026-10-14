@@ -1,18 +1,20 @@
-# U-HYDRA-
-U-HYDRA: UNCERTAINTY-AWARE MULTI-HYPOTHESIS DEPTH REASONING FOR MULTI-PERSON PERSPECTIVE DISTORTION MESH RECOVERY
+# U-HYDRA
+
+**U-HYDRA: Uncertainty-Aware Multi-Hypothesis Depth Reasoning for Multi-Person Perspective Distortion Mesh Recovery**
+
 ## Qualitative Results
 
-### Distorted Rendering
-![Distorted Rendering](Distorted%20rendering.png)
+### Perspective-Distorted Mesh Rendering
+![Perspective-Distorted Mesh Rendering](distorted%20Images.png)
 
-### Distorted Rendering 2
-![Distorted Rendering 2](Distorted%20Rendering2.png)
+### Close-Range Perspective-Distorted Mesh Rendering
+![Close-Range Perspective-Distorted Mesh Rendering](distorted%20Images%202.png)
 
-### Distorted Rendering 3
-![Distorted Rendering 3](Distorted%20Rendering%203.png)
+### 3DPW Mesh Rendering
+![3DPW Mesh Rendering](Examples%20from%203DPW.png)
 
-### Multi-Person Rendering
-![Multi-Person Rendering](Multiperson%20rendering.png)
+### Multi-Person Human Mesh Recovery
+![Multi-Person Human Mesh Recovery](Multi-person%20human%20mesh%20recovery.png)
 
-### Multi-Person Multi-View Rendering
-![Multi-Person Multi-View Rendering](Multiperson%20Multi%20view%20Rendering.png)
+### Multi-View Mesh Rendering
+![Multi-View Mesh Rendering](Multi%20view%20.png)
