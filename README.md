@@ -13,8 +13,8 @@
 ### Examples from 3DPW
 ![Examples from 3DPW](Examples%20from%203DPW.png)
 
-### Multi-person human mesh recovery
-![Multi-person human mesh recovery](Multi-person%20human%20mesh%20recovery.png)
+### Multi-person Human Mesh Recovery
+![Multi-person Human Mesh Recovery](Multi-person%20human%20mesh%20recovery.png)
 
-### Multi view
-![Multi view](Multi%20view%20.png)
+### Multi-View Mesh Rendering
+![Multi-View Mesh Rendering](multi-view.png)
