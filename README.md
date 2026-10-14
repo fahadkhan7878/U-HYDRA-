@@ -18,4 +18,4 @@
 
 
 ### Multi-View Mesh Rendering
-![Multi-View Mesh Rendering](<Multi view .png>)
+![Multi-View Mesh Rendering](./multi-view.png)
