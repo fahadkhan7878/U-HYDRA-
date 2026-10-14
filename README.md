@@ -16,5 +16,6 @@
 ### Multi-person Human Mesh Recovery
 ![Multi-person Human Mesh Recovery](Multi-person%20human%20mesh%20recovery.png)
 
+
 ### Multi-View Mesh Rendering
-![Multi-View Mesh Rendering](multi-view.png)
+![Multi-View Mesh Rendering](<Multi view .png>)
