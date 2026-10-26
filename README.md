@@ -1,8 +1,7 @@
-# U-HYDRA on top of BLADE
+# U-HYDRA
 
 Code for **U-HYDRA: Uncertainty-Aware Multi-Hypothesis Depth Reasoning for
 Multi-Person Perspective Distortion Mesh Recovery** (ICASSP 2027 submission),
-implemented as a drop-in package for the BLADE repository.
 
 ```
 blade-main/
