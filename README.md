@@ -352,7 +352,7 @@ assumed.
 #### Multi-person human mesh recovery
 <img src="Multi-person human mesh recovery.png" alt="Project Logo" width="800" />
 
-#### Multi-person distortion
+#### Distortion
 <img src="distorted Images 2.png" alt="Project Logo" width="800" />
 
 <img src="distorted Images.png" alt="Project Logo" width="800" />
