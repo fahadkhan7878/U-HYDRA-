@@ -343,6 +343,10 @@ assumed.
 
 ---
 
+<img src="Multi-view.png" alt="Project Logo" width="200" />
+
+---
+
 ## 11. Configuration and environment switches
 
 Main config: `uhydra/configs/uhydra_hrnet.py` (model) and
