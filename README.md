@@ -11,11 +11,67 @@ the candidate whose full-perspective rendering best matches the person mask is
 selected. The predicted spread also gives a calibrated per-person depth
 uncertainty at no extra cost.
 
-The code is a drop-in package for the [BLADE](https://github.com/NVlabs/BLADE)
-repository: it reuses BLADE's data pipelines, body models, SMPL-X → SMPL
-evaluation protocol and mmcv train/test scripts, and adds the U-HYDRA model,
-configs, evaluation diagnostics, ablation and cost tools. **No BLADE file is
-modified.**
+This repository contains the complete U-HYDRA implementation: the model
+(`uhydra/`), the data pipelines, body models and mmcv train/test scripts it
+runs on, the evaluation protocol, and the ablation, cost and demo tools.
+
+---
+
+## Contents
+
+1. [Repository layout](#1-repository-layout)
+2. [Installation](#2-installation)
+3. [Pretrained weights and body models](#3-pretrained-weights-and-body-models)
+4. [Datasets](#4-datasets)
+5. [Quick check](#5-quick-check)
+6. [Training](#6-training)
+7. [Testing / evaluation](#7-testing--evaluation)
+8. [Ablation experiments](#8-ablation-experiments)
+9. [Computational cost](#9-computational-cost)
+10. [In-the-wild multi-person demo](#10-in-the-wild-multi-person-demo)
+11. [Configuration and environment switches](#11-configuration-and-environment-switches)
+12. [Paper → code map](#12-paper--code-map)
+13. [Troubleshooting](#13-troubleshooting)
+14. [Citation](#14-citation)
+15. [Acknowledgements](#15-acknowledgements)
+
+---
+
+## 1. Repository layout
+
+```
+U-HYDRA/
+├── scripts/train.py       mmcv training entry point, driven by the U-HYDRA configs
+├── scripts/test.py        mmcv evaluation entry point
+├── body_models/           SMPL / SMPL-X (manual download, Sec. 3)
+├── pretrained/            HRNet ImageNet weights, SMPL-X transfer data
+├── mmhuman_data/          datasets and preprocessed labels (Sec. 4)
+├── (support libraries)    data pipelines, body models, renderers, mmcv / mmhuman3d
+└── uhydra/                <-- the U-HYDRA model and experiment tools
+    ├── models/
+    │   ├── mhdr.py            MHDR: distributional depth head + quantile hypotheses (Eqs. 1-2)
+    │   ├── dcme.py            DCME: depth-conditioned SMPL-X regressor (Eq. 4)
+    │   ├── geometry.py        full-perspective projection, soft silhouettes, soft IoU
+    │   ├── selection.py       candidate selection (Eq. 3) + ablation rules
+    │   ├── losses.py          training objective (Eqs. 5-7)
+    │   ├── masks.py           person mask: GT at training, pseudo-label at inference
+    │   └── architecture.py    UHYDRA (mmcv architecture): train_step / forward_test
+    ├── configs/
+    │   ├── uhydra_base.py     pipelines, datasets, schedule
+    │   └── uhydra_hrnet.py    HRNet-W32 / W48 model config
+    ├── evaluation/
+    │   ├── metrics.py         PA-MPJPE, MPJPE, PVE, mIoU, coverage, oracle gap
+    │   └── summarize_diagnostics.py
+    ├── tools/
+    │   ├── train.sh           train (3 GPUs)
+    │   ├── test.sh            evaluate on all benchmarks
+    │   ├── ablation.py        Fig. 3 ablation runner
+    │   ├── cost.py            Table 3: params / GFLOPs / memory / latency
+    │   └── demo_multiperson.py
+    ├── api.py                 build_model / load_checkpoint helpers
+    ├── tests/test_core.py     unit tests (no GPU needed)
+    └── README.md
+```
 
 ---
 
@@ -24,8 +80,8 @@ modified.**
 Tested with Python 3.9, PyTorch 2.0.1 + CUDA 11.8, PyTorch3D 0.7, mmcv 1.x.
 
 ```bash
-# 1) BLADE environment (identical to BLADE's README)
-git clone https://github.com/NVlabs/BLADE blade-main && cd blade-main
+# 1) environment
+git clone <U-HYDRA repository URL> U-HYDRA && cd U-HYDRA
 conda create -n uhydra python=3.9.19 -y && conda activate uhydra
 
 pip install tqdm torch==2.0.1+cu118 torchvision==0.15.2+cu118 \
@@ -41,11 +97,11 @@ cd mmcv && MMCV_WITH_OPS=1 pip install -e . -v && cd ..
 pip install -e .
 cd smplx_repo && pip install -e . && cd ..
 cd torch-trust-ncg && python setup.py install && cd ..
-pip install numpy==1.23.1          # BLADE pins this last; ignore version warnings
+pip install numpy==1.23.1          # pinned last on purpose; ignore version warnings
 
-# 2) U-HYDRA
+# 2) U-HYDRA package (skip if it is already in the repository)
 unzip uhydra_code.zip
-cp -r uhydra_code/uhydra ./uhydra   # must sit next to blade/ and scripts/
+cp -r uhydra_code/uhydra ./uhydra   # must sit in the repository root next to scripts/
 ```
 
 Headless servers (no display) need, before any training or testing:
@@ -55,8 +111,8 @@ export PYGLET_HEADLESS=True
 export PYOPENGL_PLATFORM=egl
 ```
 
-U-HYDRA does **not** use BLADE's Depth-Anything-V2, AiOS or Sapiens models,
-so those checkpoints are not required.
+U-HYDRA does **not** use Depth-Anything-V2, AiOS or Sapiens, so none of those
+checkpoints are required.
 
 ---
 
@@ -70,8 +126,8 @@ so those checkpoints are not required.
 | HRNet-W48 ImageNet weights   | `pretrained/hrnet_w48_imagenet.pth`               | mmpose / mmhuman3d model zoo (or set `HRNET_PRETRAINED`) |
 | HRNet-W32 ImageNet weights   | `pretrained/hrnet_w32_imagenet.pth`               | idem |
 
-The SMPL → SMPL-X conversion and the transfer-data files are needed only for
-evaluation on the SMPL-labelled benchmarks (same protocol as BLADE).
+The SMPL-X → SMPL transfer-data files are needed only for evaluation on the
+SMPL-labelled benchmarks.
 
 Expected tree:
 
@@ -88,8 +144,8 @@ pretrained/
 
 ## 4. Datasets
 
-Follow BLADE's `docs/DATASETS.md` to obtain images and labels; U-HYDRA reads
-exactly the same `.npz` files.
+Follow `docs/DATASETS.md` to obtain the images and the preprocessed `.npz`
+labels.
 
 ```
 mmhuman_data/
@@ -107,11 +163,11 @@ mmhuman_data/
 ```
 
 *Training* uses the SMPL-X-converted labels of PDHuman, HuMMan and Human3.6M
-(mixing ratios 0.435 / 0.436 / 0.129 as in BLADE). BEDLAM-CC renders can be
+(mixing ratios 0.435 / 0.436 / 0.129). BEDLAM-CC renders can be
 added as a fourth source once converted to the `HumanImageDataset_SMPLX`
 format (see the commented block in `configs/uhydra_base.py`).
 
-*3DPW and AGORA* are not shipped with BLADE. Create `pw3d_test.npz` and
+*3DPW and AGORA*: create `pw3d_test.npz` and
 `agora_val.npz` with the MMHuman3D converters
 (`python tools/convert_datasets.py --datasets pw3d agora ...` in MMHuman3D) and
 keep the `K` or `focal_length` field; the test pipeline reads the camera
@@ -130,13 +186,9 @@ python -m pytest uhydra/tests -q
 
 # build the model and run one random forward pass on the GPU (no data needed)
 python - << 'EOF'
-import os, torch
-os.environ.update(UHYDRA_WIDTH='48', UHYDRA_MASK_BACKEND='none', MINI_BATCHSIZE='1')
-from mmcv import Config
-from blade.models.architectures.builder import build_architecture
-cfg = Config.fromfile('uhydra/configs/uhydra_hrnet.py')
-cfg.model.backbone.init_cfg = None; cfg.model.convert_to_smpl = False; cfg.model.compute_iou = False
-m = build_architecture(cfg.model).cuda().eval()
+import torch
+from uhydra.api import build_model
+m = build_model('uhydra/configs/uhydra_hrnet.py', width=48)      # random init, GPU
 img = torch.randn(2, 3, 224, 224).cuda()
 K = torch.tensor([[[1000., 0, 112.], [0, 1000., 112.], [0, 0, 1.]]]).expand(2, 3, 3).cuda()
 c = m.forward_candidates(img, K)
@@ -216,8 +268,8 @@ test-time optimisation. The person mask used by the selection rule is a
 pseudo-label from an off-the-shelf segmenter (`UHYDRA_MASK_BACKEND=mediapipe`
 by default, or `external` with pre-computed PNGs named `<sample_idx>.png` in
 `UHYDRA_MASK_DIR`). Ground truth never enters the inference path; if a mask is
-missing for an instance, the median hypothesis is used. The metrics follow
-BLADE: predictions are converted SMPL-X → SMPL and compared with the SMPL
+missing for an instance, the median hypothesis is used. For the metrics,
+predictions are converted SMPL-X → SMPL and compared with the SMPL
 labels (PA-MPJPE / MPJPE on H3.6M joints, PVE on vertices, mIoU on silhouettes).
 
 ---
@@ -340,10 +392,9 @@ Implementation notes: candidates are produced by replicating the pooled
 descriptor *K* times through the shared mesh head; the head regresses
 (T_x, T_y) in a crop-centred virtual camera and `UHYDRA.to_true_frame` converts
 them to the true camera using the crop intrinsics; hands and face are kept at
-rest, as in BLADE's protocol; the network consumes BLADE's person-centred crop
-(`depthnet_img`, 224×224) with its intrinsics `K`, and the un-augmented
-`*_orig` SMPL-X labels, so horizontal flipping is disabled in the training
-pipeline.
+rest; the network consumes the person-centred crop (`depthnet_img`, 224×224)
+with its intrinsics `K`, and the un-augmented `*_orig` SMPL-X labels, so
+horizontal flipping is disabled in the training pipeline.
 
 ---
 
@@ -358,9 +409,10 @@ pipeline.
   in the crop; use `UHYDRA_MASK_BACKEND=external` with masks from a stronger
   segmenter (Sapiens-Seg, SAM).
 * EGL / XRender errors on headless servers — export `PYGLET_HEADLESS=True
-  PYOPENGL_PLATFORM=egl` (see BLADE's README for the `libEGL.so` symlink).
-* Evaluation is slow — the SMPL-X → SMPL conversion is an optimisation
-  (BLADE's protocol); set `--cfg-options model.convert_to_smpl=False` for quick
+  PYOPENGL_PLATFORM=egl`; if `libEGL.so` is missing, link it:
+  `ln -s $CONDA_PREFIX/lib/libEGL.so.1 $CONDA_PREFIX/lib/libEGL.so`.
+* Evaluation is slow — the SMPL-X → SMPL conversion is an optimisation;
+  set `--cfg-options model.convert_to_smpl=False` for quick
   SMPL-X-only sanity runs (metrics are then not comparable to the paper).
 * CUDA out of memory in training — lower `MINI_BATCHSIZE`, or set
   `model.faces_per_pixel=20` to reduce the soft rasteriser's memory.
@@ -379,5 +431,14 @@ pipeline.
 }
 ```
 
-U-HYDRA builds on BLADE (Wang et al., CVPR 2025), MMHuman3D, ZOLLY/PDHuman,
-SMPL/SMPL-X and PyTorch3D; please cite them as well when using this code.
+## 15. Acknowledgements
+
+The data pipelines, body-model wrappers, renderer utilities and the SMPL-X →
+SMPL evaluation protocol are adapted from
+[BLADE](https://github.com/NVlabs/BLADE) (Wang et al., CVPR 2025), which in
+turn builds on [MMHuman3D](https://github.com/open-mmlab/mmhuman3d). We also
+thank the authors of [ZOLLY / PDHuman](https://github.com/SMPLCap/Zolly),
+[SPEC](https://spec.is.tue.mpg.de/), [HuMMan](https://caizhongang.com/projects/HuMMan/),
+[BEDLAM](https://bedlam.is.tue.mpg.de/), [SMPL / SMPL-X](https://smpl-x.is.tue.mpg.de/)
+and [PyTorch3D](https://pytorch3d.org/). Please cite these works as well when
+using this code.
