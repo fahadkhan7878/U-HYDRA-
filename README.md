@@ -343,7 +343,19 @@ assumed.
 
 ---
 
-<img src="Multi-view.png" alt="Project Logo" width="200" />
+<img src="Multi-view.png" alt="Project Logo" width="800" />
+
+<img src="Examples from 3DPW.png" alt="Project Logo" width="800" />
+
+<img src="Multi-person human mesh recovery.png" alt="Project Logo" width="800" />
+
+<img src="distorted Images 2.png" alt="Project Logo" width="800" />
+
+<img src="distorted Images.png" alt="Project Logo" width="800" />
+
+
+
+
 
 ---
 
