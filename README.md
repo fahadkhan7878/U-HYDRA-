@@ -342,13 +342,17 @@ depth, σ and k*, and saves vertices, shape and translation to
 assumed.
 
 ---
+#### Multi-view
 
 <img src="Multi-view.png" alt="Project Logo" width="800" />
 
+#### Visuals from 3DPW
 <img src="Examples from 3DPW.png" alt="Project Logo" width="800" />
 
+#### Multi-person human mesh recovery
 <img src="Multi-person human mesh recovery.png" alt="Project Logo" width="800" />
 
+#### Multi-person distortion
 <img src="distorted Images 2.png" alt="Project Logo" width="800" />
 
 <img src="distorted Images.png" alt="Project Logo" width="800" />
